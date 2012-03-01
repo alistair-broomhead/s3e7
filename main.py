@@ -11,8 +11,8 @@ def main():
         request_token_url='http://api.twitter.com/oauth/request_token',
         access_token_url='http://api.twitter.com/oauth/access_token',
         authorize_url='http://api.twitter.com/oauth/authenticate',
-        consumer_key='<your key here>', #TODO#
-        consumer_secret='<your secret here>' #TODO#
+        consumer_key='NxQb0nVZZpnaokDjgUURLg', #TODO#
+        consumer_secret='5a9SBrLxvYkYp3xv462Y2N1t2FSkUurGgqD4w9qwU' #TODO#
     )
 
 
