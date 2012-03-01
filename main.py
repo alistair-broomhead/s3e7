@@ -15,6 +15,8 @@ import time
 import requests
 from oauth_hook import OAuthHook
 import simplejson as json
+import luhn
+import re
 
 consumer_key='NxQb0nVZZpnaokDjgUURLg', #TODO#
 consumer_secret='5a9SBrLxvYkYp3xv462Y2N1t2FSkUurGgqD4w9qwU' #TODO#
@@ -23,6 +25,8 @@ access_token = "510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ"
 access_token_secret = "OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA"
 
 mentions_url = "https://api.twitter.com/1/statuses/mentions.json"
+
+pattern = re.compile(r'\d+')
 
 #def build_access_token():
 #    return oauth.Token(key="510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ", secret="OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA")
@@ -51,19 +55,20 @@ mentions_url = "https://api.twitter.com/1/statuses/mentions.json"
 def main():
     oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, True)
     client = requests.session(hooks={'pre_request': oauth_hook})
-    response = client.get('http://api.twitter.com/1/account/rate_limit_status.json')
+    response = client.get('https://api.twitter.com/1/search.json?q=ldnpydojo')
     results = json.loads(response.content)
+    import pprint
+    tweets = results['results']
+    for tweet in tweets:
+        tweet_text = tweet['text']
 
-    print results
-
-    response2 = client.get(mentions_url)
-    print response2
-    results2 = json.loads(response2.content)
-
-    print results2
-
-    response3 = client.post('http://api.twitter.com/1/statuses/update.json', {'status': "Yay! It works!", 'wrap_links': True})
-    print response3
+        try:
+            clean_tweet = pattern.search(tweet_text).group(0)
+            print "Tweet: %s" % clean_tweet
+            is_luhn = luhn.is_luhn_valid(clean_tweet)
+            print "Luhn: %s" % `is_luhn`
+        except:
+            pass
 
 if __name__ == "__main__":
     main()
