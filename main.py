@@ -11,62 +11,59 @@ r = requests.post(url, data=json.dumps(payload), headers=headers)
 
 
 import oauth2 as oauth
+import time
+import requests
+from oauth_hook import OAuthHook
+import simplejson as json
 
 consumer_key='NxQb0nVZZpnaokDjgUURLg', #TODO#
 consumer_secret='5a9SBrLxvYkYp3xv462Y2N1t2FSkUurGgqD4w9qwU' #TODO#
 
-AccessToken = "510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ"
-AccessSecret = "OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA"
+access_token = "510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ"
+access_token_secret = "OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA"
 
-CONSUMER_KEY = 'NxQb0nVZZpnaokDjgUURLg'
-CONSUMER_SECRET = '5a9SBrLxvYkYp3xv462Y2N1t2FSkUurGgqD4w9qwU'
-CONSUMER = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
+mentions_url = "https://api.twitter.com/1/statuses/mentions.json"
 
-ACCESS_TOKEN_FILE = 'OAUTH_ACCESS_TOKEN'
-
-TWITTER_REQUEST_TOKEN_URL = 'http://twitter.com/oauth/request_token'
-TWITTER_ACCESS_TOKEN_URL = 'http://twitter.com/oauth/access_token'
-TWITTER_AUTHORIZE_URL = 'http://twitter.com/oauth/authorize'
-TWITTER_STREAM_API_HOST = 'stream.twitter.com'
-TWITTER_STREAM_API_PATH = '/1/statuses/sample.json'
-
-def build_access_token():
-    return oauth.Token(key=str_key, secret=str_secret)
-
-def build_authorization_header(access_token):
-    url = "https://%s%s" % (TWITTER_STREAM_API_HOST, TWITTER_STREAM_API_PATH)
-    params = {
-        'oauth_version': "1.0",
-        'oauth_nonce': oauth.generate_nonce(),
-        'oauth_timestamp': int(time.time()),
-        'oauth_token': access_token.key,
-        'oauth_consumer_key': CONSUMER.key
-    }
-
-    # Sign the request.
-    # For some messed up reason, we need to specify is_form_encoded to prevent
-    # the oauth2 library from setting oauth_body_hash which Twitter doesn't like.
-    req = oauth.Request(method="GET", url=url, parameters=params, is_form_encoded=True)
-    req.sign_request(oauth.SignatureMethod_HMAC_SHA1(), CONSUMER, access_token)
-
-    # Grab the Authorization header
-    header = req.to_header()['Authorization'].encode('utf-8')
-    print "Authorization header:"
-    print "     header = %s" % header
-    return header
->>>>>>> eaf46f631a4b1b2e7079c9d028296f348574ec85
+#def build_access_token():
+#    return oauth.Token(key="510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ", secret="OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA")
+#
+#def build_authorization_header(access_token):
+#    params = {
+#        'oauth_version': "1.0",
+#        'oauth_nonce': oauth.generate_nonce(),
+#        'oauth_timestamp': int(time.time()),
+#        'oauth_token': access_token.key,
+#        'oauth_consumer_key': CONSUMER.key
+#    }
+#
+#    # Sign the request.
+#    # For some messed up reason, we need to specify is_form_encoded to prevent
+#    # the oauth2 library from setting oauth_body_hash which Twitter doesn't like.
+#    req = oauth.Request(method="GET", url=url, parameters=params, is_form_encoded=True)
+#    req.sign_request(oauth.SignatureMethod_HMAC_SHA1(), CONSUMER, access_token)
+#
+#    # Grab the Authorization header
+#    header = req.to_header()['Authorization'].encode('utf-8')
+#    print "Authorization header:"
+#    print "     header = %s" % header
+#    return header
 
 def main():
-    oauth = OAuth()
-    twitter = oauth.remote_app('twitter',
-        base_url='http://api.twitter.com/1/',
-        request_token_url='http://api.twitter.com/oauth/request_token',
-        access_token_url='http://api.twitter.com/oauth/access_token',
-        authorize_url='http://api.twitter.com/oauth/authenticate',
-        consumer_key='NxQb0nVZZpnaokDjgUURLg', #TODO#
-        consumer_secret='5a9SBrLxvYkYp3xv462Y2N1t2FSkUurGgqD4w9qwU' #TODO#
-    )
+    oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, True)
+    client = requests.session(hooks={'pre_request': oauth_hook})
+    response = client.get('http://api.twitter.com/1/account/rate_limit_status.json')
+    results = json.loads(response.content)
 
+    print results
+
+    response2 = client.get(mentions_url)
+    print response2
+    results2 = json.loads(response2.content)
+
+    print results2
+
+    response3 = client.post('http://api.twitter.com/1/statuses/update.json', {'status': "Yay! It works!", 'wrap_links': True})
+    print response3
 
 if __name__ == "__main__":
     main()
