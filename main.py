@@ -26,7 +26,7 @@ access_token_secret = "OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA"
 
 mentions_url = "https://api.twitter.com/1/statuses/mentions.json"
 
-pattern = re.compile(r'\d+')
+pattern = re.compile(r'[^\d]*(\d+)[\d]*')
 
 #def build_access_token():
 #    return oauth.Token(key="510810904-yperFxEfqHoGLpF5nPsW8adTOdm1BX9pZbumcuvQ", secret="OnNjP7pQjgEW6OJOBI7lUMfnkQIF7GNTkCkPuoLA")
@@ -56,17 +56,20 @@ def main():
     oauth_hook = OAuthHook(access_token, access_token_secret, consumer_key, consumer_secret, True)
     client = requests.session(hooks={'pre_request': oauth_hook})
     response = client.get('https://api.twitter.com/1/search.json?q=ldnpydojo')
+    print response
     results = json.loads(response.content)
-    import pprint
     tweets = results['results']
     for tweet in tweets:
         tweet_text = tweet['text']
-
         try:
-            clean_tweet = pattern.search(tweet_text).group(0)
-            print "Tweet: %s" % clean_tweet
+            clean_tweet = pattern.search(tweet_text).group(1)
+            print "Tweet Num: %s" % clean_tweet
             is_luhn = luhn.is_luhn_valid(clean_tweet)
-            print "Luhn: %s" % `is_luhn`
+            if is_luhn:
+                print "Luhn: %s" % `is_luhn`
+                import pprint
+                print "Tweet:"
+                pprint.pprint(tweet)
         except:
             pass
 
