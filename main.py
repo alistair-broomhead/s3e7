@@ -61,15 +61,20 @@ def main():
     tweets = results['results']
     for tweet in tweets:
         tweet_text = tweet['text']
+        print tweet_text
         try:
             clean_tweet = pattern.search(tweet_text).group(1)
             print "Tweet Num: %s" % clean_tweet
             is_luhn = luhn.is_luhn_valid(clean_tweet)
+            print "Luhn: %s" % `is_luhn`
             if is_luhn:
-                print "Luhn: %s" % `is_luhn`
                 import pprint
                 print "Tweet:"
                 pprint.pprint(tweet)
+                tweet_back = 'RT @%(user)s %(tweet)s'%{'user':tweet['from_user'], 'tweet':tweet['text']}
+                print "Should Tweet back:", tweet_back
+                response2 = client.post('http://api.twitter.com/1/statuses/update.json', {'status': tweet_back})
+                print response2
         except:
             pass
 
